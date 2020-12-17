@@ -1,12 +1,12 @@
 import 'package:KuraCek/sqflite.dart';
-import 'package:flushbar/flushbar.dart';
+import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
-
+import 'package:toast/toast.dart';
 import 'main.dart';
 
 var savedKuralar = [];
-var myKuralarReklam;
+InterstitialAd myKuralarReklam;
 
 class MyKuralar extends StatefulWidget {
   @override
@@ -63,7 +63,12 @@ class _MyKuralarState extends State<MyKuralar> {
                               padding: EdgeInsets.all(0),
                               child: ListTile(
                                 leading: Text((index + 1).toString()),
-                                title: Text(savedKuralar[index].name),
+                                title: Text(
+                                  savedKuralar[index].name,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                                 subtitle: Text(savedKuralar[index]
                                     .kuraList
                                     .substring(
@@ -83,7 +88,6 @@ class _MyKuralarState extends State<MyKuralar> {
                                               FlatButton(
                                                 color: Colors.green,
                                                 onPressed: () async {
-                                                  myKuralarReklam..show();
                                                   _todoHelper.deleteTask(
                                                       savedKuralar[index].id);
                                                   List<TaskModel> list =
@@ -93,27 +97,11 @@ class _MyKuralarState extends State<MyKuralar> {
                                                     savedKuralar = list;
                                                   });
                                                   Navigator.pop(context);
-                                                  Flushbar(
-                                                    boxShadows: [
-                                                      BoxShadow(
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          offset:
-                                                              Offset(0.0, 2.0),
-                                                          blurRadius: 3.0)
-                                                    ],
-                                                    backgroundGradient:
-                                                        LinearGradient(colors: [
-                                                      Colors.deepOrange,
-                                                      Colors.deepOrange[200]
-                                                    ]),
-                                                    flushbarPosition:
-                                                        FlushbarPosition.TOP,
-                                                    title: 'İşlem Başarılı',
-                                                    message: 'Kura silindi.',
-                                                    duration:
-                                                        Duration(seconds: 1),
-                                                  )..show(context);
+                                                  myKuralarReklam
+                                                    ..show().whenComplete(() {
+                                                      buildToast(
+                                                          "Kura silindi.");
+                                                    });
                                                 },
                                                 child: Text('Evet'),
                                               ),
@@ -155,4 +143,11 @@ class _MyKuralarState extends State<MyKuralar> {
                 ),
               ));
   }
+
+  void buildToast(String text) => Toast.show(
+        text,
+        context,
+        duration: Toast.LENGTH_LONG,
+        gravity: Toast.TOP,
+      );
 }

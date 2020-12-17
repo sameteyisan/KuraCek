@@ -1,11 +1,11 @@
 import 'dart:math';
-
 import 'package:KuraCek/myKuralar.dart';
 import 'package:KuraCek/second_screen.dart';
 import 'package:KuraCek/sqflite.dart';
 import 'package:firebase_admob/firebase_admob.dart';
-import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:toast/toast.dart';
 
 void main() {
   runApp(MyApp());
@@ -25,6 +25,9 @@ TaskModel gonderilen;
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Kura Çek',
@@ -57,7 +60,8 @@ class _MyHomePageState extends State<MyHomePage> {
   InterstitialAd buildInterstitialAd() {
     return InterstitialAd(
       targetingInfo: targetingInfo,
-      adUnitId: 'ca-app-pub-4589290119610129/5977252855',
+      adUnitId:
+          'ca-app-pub-4589290119610129/5977252855', //ca-app-pub-4589290119610129/5977252855
       listener: (MobileAdEvent event) {
         if (event == MobileAdEvent.failedToLoad) {
           myInterstitial..load();
@@ -85,8 +89,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    FirebaseAdMob.instance
-        .initialize(appId: 'ca-app-pub-4589290119610129~8880007547');
+    FirebaseAdMob.instance.initialize(
+        appId:
+            'ca-app-pub-4589290119610129~8880007547'); //ca-app-pub-4589290119610129~8880007547
     myBanner = buildBannerAd()..load();
     myInterstitial = buildInterstitialAd()..load();
   }
@@ -102,7 +107,8 @@ class _MyHomePageState extends State<MyHomePage> {
   BannerAd buildBannerAd() {
     return BannerAd(
         targetingInfo: targetingInfo,
-        adUnitId: 'ca-app-pub-4589290119610129/9586923860',
+        adUnitId:
+            'ca-app-pub-4589290119610129/6502664756', //ca-app-pub-4589290119610129/6502664756
         size: AdSize.largeBanner,
         listener: (MobileAdEvent event) {
           if (event == MobileAdEvent.loaded) {
@@ -142,6 +148,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: Column(
                     children: [
                       TextField(
+                        textInputAction: TextInputAction.done,
+                        onEditingComplete: () {
+                          control();
+                        },
                         controller: inputController,
                         maxLength: 12,
                         decoration: InputDecoration(
@@ -149,6 +159,9 @@ class _MyHomePageState extends State<MyHomePage> {
                               splashRadius: 25,
                               icon: Icon(Icons.delete),
                               onPressed: () {
+                                if (inputController.text.isNotEmpty) {
+                                  buildToast("Aday alanı silindi.");
+                                }
                                 setState(() {
                                   inputController.clear();
                                 });
@@ -163,25 +176,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         children: [
                           FlatButton(
                             color: Colors.green,
-                            onPressed: () {
-                              if (inputController.text.length == 0) {
-                                flushbar(context, 'Aday girilmedi.',
-                                    'Bir aday girin.');
-                              } else {
-                                if (addList.contains(inputController.text)) {
-                                  flushbar(context, 'Bu aday zaten var',
-                                      'Başka bir aday girin.');
-                                } else if (inputController.text.contains(',')) {
-                                  flushbar(context, ', koyulamaz.',
-                                      "Aday adında ',' olamaz. ");
-                                } else {
-                                  addList.add(inputController.text);
-                                  setState(() {
-                                    addList = addList;
-                                  });
-                                }
-                              }
-                              inputController.clear();
+                            onPressed: () async {
+                              control();
                             },
                             child: Text(
                               'Ekle',
@@ -193,12 +189,15 @@ class _MyHomePageState extends State<MyHomePage> {
                           FlatButton(
                             color: Colors.red,
                             onPressed: () {
-                              reklam..show();
-                              setState(() {
-                                addList.clear();
-                                flushbar(context, 'İşlem Başarılı',
-                                    'Adaylar silindi.');
-                              });
+                              if (addList.isNotEmpty) {
+                                reklam
+                                  ..show().whenComplete(() {
+                                    setState(() {
+                                      addList.clear();
+                                      buildToast("Adaylar silindi");
+                                    });
+                                  });
+                              }
                             },
                             child: Text(
                               'Her Şeyi Sil',
@@ -219,7 +218,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               style: TextStyle(fontWeight: FontWeight.bold),
                             )
                           : Text(
-                              'Adaylar',
+                              'Adaylar    ${addList.length}',
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                       Expanded(
@@ -249,8 +248,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       setState(() {
                                         addList.remove(addList[index]);
                                       });
-                                      flushbar(context, 'İşlem Başarılı',
-                                          'Aday silindi.');
+                                      buildToast("Aday silindi");
                                     },
                                   )
                                 ],
@@ -310,7 +308,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                         TextField(
                                           controller: inputKuraAdiController,
                                           maxLength: 12,
-                                          onChanged: (value) {},
                                           autofocus: true,
                                           decoration: InputDecoration(
                                             labelText: 'Kura Adı',
@@ -355,15 +352,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                               name:
                                                   inputKuraAdiController.text);
                                           _todoHelper.insertTask(gonderilen);
-                                          setState(() {
-                                            listeler = '';
-                                            addList.clear();
-                                            Navigator.pop(context);
-                                            inputKuraAdiController.clear();
-                                            flushbar(context, 'İşlem Başarılı',
-                                                'Kura kaydedildi.');
-                                            reklam..show();
-                                          });
+                                          reklam
+                                            ..show().whenComplete(() {
+                                              setState(() {
+                                                listeler = '';
+                                                addList.clear();
+                                                Navigator.pop(context);
+                                                inputKuraAdiController.clear();
+                                                buildToast("Kura kaydedildi.");
+                                              });
+                                            });
                                         }
                                       },
                                       child: Text('Belirle'),
@@ -387,8 +385,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                         onPressed: () {
                           if (addList.length == 0) {
-                            flushbar(context, 'Hiçbir aday girilmedi.',
-                                'Bir aday girin.');
+                            buildToast("Aday girilmedi.");
                           } else {
                             kisiInputController.clear();
                             return showDialog<String>(
@@ -441,20 +438,14 @@ class _MyHomePageState extends State<MyHomePage> {
                                           if (int.parse(
                                                   kisiInputController.text) >
                                               addList.length) {
-                                            Navigator.pop(context);
-                                            flushbar(
-                                                context,
-                                                '${addList.length} adaydan ${int.parse(kisiInputController.text)} aday seçilememektedir.',
-                                                'Geçerli bir sayı girin.');
+                                            buildToast(
+                                                "${addList.length} adaydan ${int.parse(kisiInputController.text)} aday seçilememektedir.");
                                             kisiInputController.clear();
                                           } else if (int.parse(
                                                   kisiInputController.text) <=
                                               0) {
-                                            Navigator.pop(context);
-                                            flushbar(
-                                                context,
-                                                '${kisiInputController.text} aday seçilemez.',
-                                                'Geçerli bir sayı girin.');
+                                            buildToast(
+                                                "${kisiInputController.text} aday seçilemez.");
                                             kisiInputController.clear();
                                           } else {
                                             selectedList = [];
@@ -471,6 +462,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                             }
                                             setState(() {
                                               addList = [];
+                                              inputController.clear();
                                             });
                                             Navigator.pop(context);
                                             Navigator.push(
@@ -498,18 +490,30 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Flushbar flushbar(BuildContext context, String title, String message) {
-    return Flushbar(
-      boxShadows: [
-        BoxShadow(
-            color: Colors.deepOrange, offset: Offset(0.0, 2.0), blurRadius: 3.0)
-      ],
-      backgroundGradient:
-          LinearGradient(colors: [Colors.deepOrange, Colors.deepOrange[200]]),
-      flushbarPosition: FlushbarPosition.TOP,
-      title: title,
-      message: message,
-      duration: Duration(seconds: 1),
-    )..show(context);
+  void buildToast(String text) => Toast.show(
+        text,
+        context,
+        duration: Toast.LENGTH_LONG,
+        gravity: Toast.TOP,
+      );
+
+  void control() {
+    if (inputController.text.length == 0) {
+      buildToast("Aday girilmedi.");
+    } else {
+      if (addList.contains(inputController.text)) {
+        buildToast("Bu aday zaten var");
+      } else if (inputController.text.contains(',')) {
+        buildToast("Aday adında ',' olamaz. ");
+      } else if (inputController.text.length > 12) {
+        buildToast("Karakter sınırı aşıldı");
+      } else {
+        addList.add(inputController.text);
+        setState(() {
+          addList = addList;
+        });
+      }
+    }
+    inputController.clear();
   }
 }

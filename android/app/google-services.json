@@ -1,0 +1,41 @@
+{
+  "project_info": {
+    "project_number": "516773254119",
+    "firebase_url": "https://kuracek-a4d0d.firebaseio.com",
+    "project_id": "kuracek-a4d0d",
+    "storage_bucket": "kuracek-a4d0d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:516773254119:android:0a3d63559cdd1e27f72342",
+        "android_client_info": {
+          "package_name": "com.appID.KuraCek"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "516773254119-qelqen72n90l8dljtgf41308eotaiegi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCE_u8cNlap9qnChFsm_Z1ADcJtlEyTRcU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "516773254119-qelqen72n90l8dljtgf41308eotaiegi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      },
+      "admob_app_id": "ca-app-pub-4589290119610129~8880007547"
+    }
+  ],
+  "configuration_version": "1"
+}

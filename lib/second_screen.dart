@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'main.dart';
 
 var secondReklam;
@@ -14,12 +15,20 @@ class _SecondScreenState extends State<SecondScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          splashRadius: 25,
+          highlightColor: Colors.deepOrange,
+          icon: Icon(LineAwesomeIcons.chevron_left),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         elevation: 0,
         centerTitle: true,
         title: Text('Sonuçlar'),
       ),
       body: Container(
-        height: MediaQuery.of(context).size.height - 200,
+        padding: EdgeInsets.fromLTRB(0, 0, 0, 100),
         child: Column(
           children: [
             Expanded(
@@ -33,7 +42,8 @@ class _SecondScreenState extends State<SecondScreen> {
                             '${selectedList[index]}'.toUpperCase(),
                         style: TextStyle(
                             color: Colors.primaries[
-                                Random().nextInt(Colors.primaries.length)]),
+                                Random().nextInt(Colors.primaries.length)],
+                            fontWeight: FontWeight.bold),
                       ),
                     );
                   },
