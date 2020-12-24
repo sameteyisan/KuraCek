@@ -6,6 +6,10 @@ import 'main.dart';
 var secondReklam;
 
 class SecondScreen extends StatefulWidget {
+  final title;
+  final yeniKuraCek;
+
+  const SecondScreen({Key key, this.title, this.yeniKuraCek}) : super(key: key);
   @override
   _SecondScreenState createState() => _SecondScreenState();
 }
@@ -25,7 +29,7 @@ class _SecondScreenState extends State<SecondScreen> {
         ),
         elevation: 0,
         centerTitle: true,
-        title: Text('Sonuçlar'),
+        title: Text(widget.title),
       ),
       body: Container(
         padding: EdgeInsets.fromLTRB(0, 0, 0, 100),
@@ -67,7 +71,7 @@ class _SecondScreenState extends State<SecondScreen> {
                       Navigator.pop(context);
                     },
                     child: Text(
-                      'Yeni Kura Çek',
+                      widget.yeniKuraCek,
                       style: TextStyle(color: Colors.white),
                     ),
                   ),

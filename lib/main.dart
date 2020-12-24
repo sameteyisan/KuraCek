@@ -2,13 +2,17 @@ import 'dart:math';
 import 'package:KuraCek/myKuralar.dart';
 import 'package:KuraCek/second_screen.dart';
 import 'package:KuraCek/sqflite.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:toast/toast.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(EasyLocalization(
+      path: 'assets/languages',
+      supportedLocales: [Locale('tr', 'TR'), Locale('en', 'UK')],
+      child: MyApp()));
 }
 
 var splitsizString = '';
@@ -30,7 +34,10 @@ class MyApp extends StatelessWidget {
     ]);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Kura Çek',
+      title: 'materialAppText'.tr(),
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
       theme: ThemeData(
         primarySwatch: Colors.deepOrange,
         visualDensity: VisualDensity.adaptivePlatformDensity,
@@ -132,17 +139,52 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('Kura Çek'),
+        title: Text('appBarText'.tr()),
+        actions: [
+          PopupMenuButton<int>(
+            tooltip: "flag".tr(),
+            onSelected: (value) {
+              if (value == 1) {
+                setState(() {
+                  context.locale = Locale('tr', 'TR');
+                });
+              } else if (value == 2) {
+                setState(() {
+                  context.locale = Locale('en', 'UK');
+                });
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 1,
+                child: SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: Image.asset("assets/turkey.png"),
+                ),
+              ),
+              PopupMenuItem(
+                value: 2,
+                child: SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: Image.asset("assets/united-states.png"),
+                ),
+              ),
+            ],
+            icon: context.locale == Locale('tr', 'TR')
+                ? Image.asset("assets/turkey.png")
+                : Image.asset("assets/united-states.png"),
+          )
+        ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              height: MediaQuery.of(context).size.height - 240,
-              child: GestureDetector(
-                onTap: () {
-                  _onBackPressed(context);
-                },
+      body: GestureDetector(
+        onTap: () => _onBackPressed(context),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Container(
+                height: MediaQuery.of(context).size.height - 240,
                 child: Padding(
                   padding: EdgeInsets.all(10),
                   child: Column(
@@ -160,15 +202,17 @@ class _MyHomePageState extends State<MyHomePage> {
                               icon: Icon(Icons.delete),
                               onPressed: () {
                                 if (inputController.text.isNotEmpty) {
-                                  buildToast("Aday alanı silindi.");
+                                  buildToast(
+                                    "inputController.text.isNotEmpty".tr(),
+                                  );
                                 }
                                 setState(() {
                                   inputController.clear();
                                 });
                               },
                             ),
-                            hintText: 'Aday',
-                            labelText: 'Bir Aday Gir',
+                            hintText: 'hintText'.tr(),
+                            labelText: 'labelText'.tr(),
                             icon: Icon(Icons.add)),
                       ),
                       Row(
@@ -180,7 +224,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               control();
                             },
                             child: Text(
-                              'Ekle',
+                              'ButtonAdd'.tr(),
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white),
@@ -194,13 +238,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ..show().whenComplete(() {
                                     setState(() {
                                       addList.clear();
-                                      buildToast("Adaylar silindi");
+                                      buildToast(
+                                        "addList.isNotEmpty".tr(),
+                                      );
                                     });
                                   });
                               }
                             },
                             child: Text(
-                              'Her Şeyi Sil',
+                              'ButtonClear'.tr(),
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white),
@@ -214,11 +260,11 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       addList.length == 0
                           ? Text(
-                              'Henüz Eklenen Bir Aday Yok',
+                              'addList.length0'.tr(),
                               style: TextStyle(fontWeight: FontWeight.bold),
                             )
                           : Text(
-                              'Adaylar    ${addList.length}',
+                              'addList.length!0'.tr() + '    ${addList.length}',
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                       Expanded(
@@ -248,7 +294,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       setState(() {
                                         addList.remove(addList[index]);
                                       });
-                                      buildToast("Aday silindi");
+                                      buildToast("IconButtonClear".tr());
                                     },
                                   )
                                 ],
@@ -264,138 +310,48 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
               ),
-            ),
-            addList.length == 0
-                ? FlatButton(
-                    color: Colors.deepOrange,
-                    onPressed: () async {
-                      reklam..show();
-                      List<TaskModel> list = await _todoHelper.getAllTask();
-                      savedKuralar = list;
-                      print(list.length);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => MyKuralar()),
-                      );
-                    },
-                    child: Text(
-                      'Kuralarımı Göster',
-                      style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      FlatButton(
-                        color: Colors.deepOrange,
-                        onPressed: () async {
-                          showDialog<String>(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: Container(
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      'Bir Kura Adı Belirleyiniz.',
-                                      style: TextStyle(fontSize: 17),
-                                    ),
-                                  ),
-                                  content: Container(
-                                    height: 100,
-                                    child: Column(
-                                      children: [
-                                        TextField(
-                                          controller: inputKuraAdiController,
-                                          maxLength: 12,
-                                          autofocus: true,
-                                          decoration: InputDecoration(
-                                            labelText: 'Kura Adı',
-                                            suffixIcon: IconButton(
-                                              icon: Icon(Icons.clear),
-                                              onPressed: () {
-                                                inputKuraAdiController.clear();
-                                              },
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  actions: [
-                                    FlatButton(
-                                      color: Colors.green,
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                        inputKuraAdiController.clear();
-                                      },
-                                      child: Text('İptal'),
-                                    ),
-                                    FlatButton(
-                                      color: Colors.deepOrange,
-                                      onPressed: () {
-                                        if (inputKuraAdiController
-                                                .text.length ==
-                                            0) {
-                                          print('Bir Ad Belirle');
-                                        } else {
-                                          for (var i = 0;
-                                              i < addList.length;
-                                              i++) {
-                                            setState(() {
-                                              listeler += addList[i] + ', ';
-                                            });
-                                          }
-                                          print(listeler);
-                                          gonderilen = TaskModel(
-                                              kuraList: listeler,
-                                              name:
-                                                  inputKuraAdiController.text);
-                                          _todoHelper.insertTask(gonderilen);
-                                          reklam
-                                            ..show().whenComplete(() {
-                                              setState(() {
-                                                listeler = '';
-                                                addList.clear();
-                                                Navigator.pop(context);
-                                                inputKuraAdiController.clear();
-                                                buildToast("Kura kaydedildi.");
-                                              });
-                                            });
-                                        }
-                                      },
-                                      child: Text('Belirle'),
-                                    )
-                                  ],
-                                );
-                              });
-                        },
-                        child: Text(
-                          'Kurayı Kaydet',
-                          style: TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
+              addList.length == 0
+                  ? FlatButton(
+                      color: Colors.deepOrange,
+                      onPressed: () async {
+                        reklam..show();
+                        List<TaskModel> list = await _todoHelper.getAllTask();
+                        savedKuralar = list;
+                        print(list.length);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => MyKuralar(
+                                    title: "kuralarim".tr(),
+                                    kuralarimdamSil: "kuralarimdanSil".tr(),
+                                    kuralarimdanSilindi:
+                                        "kuralarimdanSilindi".tr(),
+                                    yes: "yes".tr(),
+                                    no: "no".tr(),
+                                    kayitliBirKuraYok: "kayitliBirKuraYok".tr(),
+                                  )),
+                        );
+                      },
+                      child: Text(
+                        'showKura'.tr(),
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
                       ),
-                      FlatButton(
-                        color: Colors.deepOrange,
-                        child: Text(
-                          'Kura Çekmeyi Başlat',
-                          style: TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
-                        onPressed: () {
-                          if (addList.length == 0) {
-                            buildToast("Aday girilmedi.");
-                          } else {
-                            kisiInputController.clear();
-                            return showDialog<String>(
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        FlatButton(
+                          color: Colors.deepOrange,
+                          onPressed: () async {
+                            showDialog<String>(
                                 context: context,
                                 builder: (BuildContext context) {
                                   return AlertDialog(
                                     title: Container(
                                       alignment: Alignment.center,
                                       child: Text(
-                                        '${addList.length} adaydan kaç aday seçilecek ?',
+                                        'KuraAdiBelirleme'.tr(),
                                         style: TextStyle(fontSize: 17),
                                       ),
                                     ),
@@ -404,18 +360,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                       child: Column(
                                         children: [
                                           TextField(
-                                            maxLength: 3,
-                                            onChanged: (value) {},
-                                            controller: kisiInputController,
-                                            keyboardType: TextInputType.number,
+                                            controller: inputKuraAdiController,
+                                            maxLength: 12,
                                             autofocus: true,
                                             decoration: InputDecoration(
-                                              labelText:
-                                                  'Aday Sayısını Giriniz',
+                                              labelText: 'KuraAdi'.tr(),
                                               suffixIcon: IconButton(
                                                 icon: Icon(Icons.clear),
                                                 onPressed: () {
-                                                  kisiInputController.clear();
+                                                  inputKuraAdiController
+                                                      .clear();
                                                 },
                                               ),
                                             ),
@@ -428,63 +382,187 @@ class _MyHomePageState extends State<MyHomePage> {
                                         color: Colors.green,
                                         onPressed: () {
                                           Navigator.pop(context);
-                                          kisiInputController.clear();
+                                          inputKuraAdiController.clear();
                                         },
-                                        child: Text('İptal'),
+                                        child: Text('Iptal'.tr()),
                                       ),
                                       FlatButton(
                                         color: Colors.deepOrange,
                                         onPressed: () {
-                                          if (int.parse(
-                                                  kisiInputController.text) >
-                                              addList.length) {
-                                            buildToast(
-                                                "${addList.length} adaydan ${int.parse(kisiInputController.text)} aday seçilememektedir.");
-                                            kisiInputController.clear();
-                                          } else if (int.parse(
-                                                  kisiInputController.text) <=
+                                          if (inputKuraAdiController
+                                                  .text.length ==
                                               0) {
-                                            buildToast(
-                                                "${kisiInputController.text} aday seçilemez.");
-                                            kisiInputController.clear();
+                                            buildToast("BirAdBelirle".tr());
+                                          } else if (inputKuraAdiController
+                                                  .text.length >
+                                              12) {
+                                            buildToast("karakterSiniri".tr());
                                           } else {
-                                            selectedList = [];
-                                            count = int.parse(
-                                                kisiInputController.text);
-
-                                            for (var i = 0; i < count; i++) {
-                                              var aday = addList[_random
-                                                  .nextInt(addList.length)];
+                                            for (var i = 0;
+                                                i < addList.length;
+                                                i++) {
                                               setState(() {
-                                                addList.remove(aday);
-                                                selectedList.add(aday);
+                                                listeler += addList[i] + ', ';
                                               });
                                             }
-                                            setState(() {
-                                              addList = [];
-                                              inputController.clear();
-                                            });
-                                            Navigator.pop(context);
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      SecondScreen()),
-                                            );
-                                            reklam..show();
+                                            gonderilen = TaskModel(
+                                                kuraList: listeler,
+                                                name: inputKuraAdiController
+                                                    .text);
+                                            _todoHelper.insertTask(gonderilen);
+                                            reklam
+                                              ..show().whenComplete(() {
+                                                setState(() {
+                                                  listeler = '';
+                                                  addList.clear();
+                                                  Navigator.pop(context);
+                                                  inputKuraAdiController
+                                                      .clear();
+                                                  buildToast(
+                                                      "KuraKaydedildi".tr());
+                                                });
+                                              });
                                           }
                                         },
-                                        child: Text('Devam'),
+                                        child: Text('ButtonBelirle'.tr()),
                                       )
                                     ],
                                   );
                                 });
-                          }
-                        },
-                      )
-                    ],
-                  ),
-          ],
+                          },
+                          child: Text(
+                            'ButtonKurayiKaydet'.tr(),
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        FlatButton(
+                          color: Colors.deepOrange,
+                          child: Text(
+                            'ButtonKuraCekmeyiBaslat'.tr(),
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          onPressed: () {
+                            if (addList.length == 0) {
+                              buildToast("adayList.lentgh==0".tr());
+                            } else {
+                              kisiInputController.clear();
+                              return showDialog<String>(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: Container(
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          "secimSorusu".tr() +
+                                              '${addList.length} ' +
+                                              'secimSorusuExtra'
+                                                  .tr(), //'${addList.length} adaydan kaç aday seçilecek ?'
+                                          style: TextStyle(fontSize: 17),
+                                        ),
+                                      ),
+                                      content: Container(
+                                        height: 100,
+                                        child: Column(
+                                          children: [
+                                            TextField(
+                                              maxLength: 3,
+                                              onChanged: (value) {},
+                                              controller: kisiInputController,
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              autofocus: true,
+                                              decoration: InputDecoration(
+                                                labelText:
+                                                    'adaySayisiSorgu'.tr(),
+                                                suffixIcon: IconButton(
+                                                  icon: Icon(Icons.clear),
+                                                  onPressed: () {
+                                                    kisiInputController.clear();
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      actions: [
+                                        FlatButton(
+                                          color: Colors.green,
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                            kisiInputController.clear();
+                                          },
+                                          child: Text('Iptal'.tr()),
+                                        ),
+                                        FlatButton(
+                                          color: Colors.deepOrange,
+                                          onPressed: () {
+                                            if (int.parse(
+                                                    kisiInputController.text) >
+                                                addList.length) {
+                                              buildToast(
+                                                '${addList.length} ' +
+                                                    'SuKadar'.tr() +
+                                                    ' ${int.parse(kisiInputController.text)} ' +
+                                                    'BuKadar'.tr(),
+                                              );
+                                              kisiInputController.clear();
+                                            } else if (int.parse(
+                                                    kisiInputController.text) <=
+                                                0) {
+                                              buildToast(
+                                                "${kisiInputController.text} " +
+                                                    "girdi0".tr(),
+                                              );
+                                              kisiInputController.clear();
+                                            } else {
+                                              selectedList = [];
+                                              count = int.parse(
+                                                  kisiInputController.text);
+
+                                              for (var i = 0; i < count; i++) {
+                                                var aday = addList[_random
+                                                    .nextInt(addList.length)];
+                                                setState(() {
+                                                  addList.remove(aday);
+                                                  selectedList.add(aday);
+                                                });
+                                              }
+                                              setState(() {
+                                                addList = [];
+                                                inputController.clear();
+                                              });
+                                              Navigator.pop(context);
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        SecondScreen(
+                                                          title:
+                                                              'sonuclar'.tr(),
+                                                          yeniKuraCek:
+                                                              'newKura'.tr(),
+                                                        )),
+                                              );
+                                              reklam..show();
+                                            }
+                                          },
+                                          child: Text('devam'.tr()),
+                                        )
+                                      ],
+                                    );
+                                  });
+                            }
+                          },
+                        )
+                      ],
+                    ),
+            ],
+          ),
         ),
       ),
     );
@@ -499,14 +577,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void control() {
     if (inputController.text.length == 0) {
-      buildToast("Aday girilmedi.");
+      buildToast("adayGirilmedi".tr());
     } else {
       if (addList.contains(inputController.text)) {
-        buildToast("Bu aday zaten var");
+        buildToast("adayVar".tr());
       } else if (inputController.text.contains(',')) {
-        buildToast("Aday adında ',' olamaz. ");
+        buildToast("virgul".tr());
       } else if (inputController.text.length > 12) {
-        buildToast("Karakter sınırı aşıldı");
+        buildToast("karakterSiniri.".tr());
       } else {
         addList.add(inputController.text);
         setState(() {

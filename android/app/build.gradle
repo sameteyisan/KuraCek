@@ -41,8 +41,8 @@ android {
         applicationId 'com.appID.KuraCek'
         minSdkVersion 17
         targetSdkVersion 29
-        versionCode 8
-        versionName '8.1'
+        versionCode 9
+        versionName '1.9'
     }
 
     buildTypes {

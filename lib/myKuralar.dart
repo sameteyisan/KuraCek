@@ -9,6 +9,23 @@ var savedKuralar = [];
 InterstitialAd myKuralarReklam;
 
 class MyKuralar extends StatefulWidget {
+  final title;
+  final kuralarimdamSil;
+  final kuralarimdanSilindi;
+  final yes;
+  final no;
+  final kayitliBirKuraYok;
+
+  const MyKuralar(
+      {Key key,
+      this.title,
+      this.kuralarimdamSil,
+      this.kuralarimdanSilindi,
+      this.yes,
+      this.no,
+      this.kayitliBirKuraYok})
+      : super(key: key);
+
   @override
   _MyKuralarState createState() => _MyKuralarState();
 }
@@ -29,7 +46,7 @@ class _MyKuralarState extends State<MyKuralar> {
               Navigator.pop(context);
             },
           ),
-          title: Text('Kuralarım'),
+          title: Text(widget.title),
         ),
         body: savedKuralar.length != 0
             ? Container(
@@ -82,8 +99,7 @@ class _MyKuralarState extends State<MyKuralar> {
                                         context: context,
                                         builder: (BuildContext context) {
                                           return AlertDialog(
-                                            title: Text(
-                                                'Bu Kurayı Silmek İstediğinize Emin Misiniz ?'),
+                                            title: Text(widget.kuralarimdamSil),
                                             actions: [
                                               FlatButton(
                                                 color: Colors.green,
@@ -99,18 +115,18 @@ class _MyKuralarState extends State<MyKuralar> {
                                                   Navigator.pop(context);
                                                   myKuralarReklam
                                                     ..show().whenComplete(() {
-                                                      buildToast(
-                                                          "Kura silindi.");
+                                                      buildToast(widget
+                                                          .kuralarimdanSilindi);
                                                     });
                                                 },
-                                                child: Text('Evet'),
+                                                child: Text(widget.yes),
                                               ),
                                               FlatButton(
                                                 color: Colors.deepOrange,
                                                 onPressed: () {
                                                   Navigator.pop(context);
                                                 },
-                                                child: Text('Hayır'),
+                                                child: Text(widget.no),
                                               ),
                                             ],
                                           );
@@ -135,7 +151,7 @@ class _MyKuralarState extends State<MyKuralar> {
               )
             : Center(
                 child: Text(
-                  'Kayıtlı Bir Kura Bulunmamaktadır.',
+                  widget.kayitliBirKuraYok,
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.grey,
