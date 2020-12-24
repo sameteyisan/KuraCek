@@ -1,6 +1,6 @@
 {
-    "materialAppText": "Cut Lost",
-    "appBarText" :"Cut Lost",
+    "materialAppText": "Casting Lots",
+    "appBarText" :"Casting Lots",
     "inputController.text.isNotEmpty" : "Candidate field deleted",
     "hintText" : "Candidate",
     "labelText": "Enter a Candidate",
