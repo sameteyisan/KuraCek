@@ -1,18 +1,35 @@
+import 'dart:convert';
+
 import 'dart:math';
+import 'dart:ui';
 import 'package:KuraCek/myKuralar.dart';
 import 'package:KuraCek/second_screen.dart';
 import 'package:KuraCek/sqflite.dart';
-import 'package:easy_localization/easy_localization.dart';
+import 'package:KuraCek/sqfliteRating.dart';
+import 'package:devicelocale/devicelocale.dart';
 import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:toast/toast.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-void main() {
-  runApp(EasyLocalization(
-      path: 'assets/languages',
-      supportedLocales: [Locale('tr', 'TR'), Locale('en', 'UK')],
-      child: MyApp()));
+var deviceLanguage;
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dilDestegi();
+  runApp(MyApp());
+}
+
+Future<dynamic> dilDestegi() async {
+  List languages = await Devicelocale.preferredLanguages;
+  if (languages[0] == "tr_TR") {
+    String data = await rootBundle.loadString('assets/languages/turk.json');
+    deviceLanguage = json.decode(data);
+  } else {
+    String data = await rootBundle.loadString('assets/languages/eng.json');
+    deviceLanguage = json.decode(data);
+  }
+  print(languages[0]);
 }
 
 var splitsizString = '';
@@ -34,10 +51,7 @@ class MyApp extends StatelessWidget {
     ]);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'materialAppText'.tr(),
-      localizationsDelegates: context.localizationDelegates,
-      supportedLocales: context.supportedLocales,
-      locale: context.locale,
+      title: deviceLanguage["materialAppText"],
       theme: ThemeData(
         primarySwatch: Colors.deepOrange,
         visualDensity: VisualDensity.adaptivePlatformDensity,
@@ -68,7 +82,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return InterstitialAd(
       targetingInfo: targetingInfo,
       adUnitId:
-          'ca-app-pub-4589290119610129/5977252855', //ca-app-pub-4589290119610129/5977252855
+          InterstitialAd.testAdUnitId, //ca-app-pub-4589290119610129/5977252855
       listener: (MobileAdEvent event) {
         if (event == MobileAdEvent.failedToLoad) {
           myInterstitial..load();
@@ -95,10 +109,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
+    ratingVarMi();
     super.initState();
     FirebaseAdMob.instance.initialize(
         appId:
-            'ca-app-pub-4589290119610129~8880007547'); //ca-app-pub-4589290119610129~8880007547
+            FirebaseAdMob.testAppId); //ca-app-pub-4589290119610129~8880007547
     myBanner = buildBannerAd()..load();
     myInterstitial = buildInterstitialAd()..load();
   }
@@ -115,7 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return BannerAd(
         targetingInfo: targetingInfo,
         adUnitId:
-            'ca-app-pub-4589290119610129/6502664756', //ca-app-pub-4589290119610129/6502664756
+            BannerAd.testAdUnitId, //ca-app-pub-4589290119610129/6502664756
         size: AdSize.largeBanner,
         listener: (MobileAdEvent event) {
           if (event == MobileAdEvent.loaded) {
@@ -139,44 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('appBarText'.tr()),
-        actions: [
-          PopupMenuButton<int>(
-            tooltip: "flag".tr(),
-            onSelected: (value) {
-              if (value == 1) {
-                setState(() {
-                  context.locale = Locale('tr', 'TR');
-                });
-              } else if (value == 2) {
-                setState(() {
-                  context.locale = Locale('en', 'UK');
-                });
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 1,
-                child: SizedBox(
-                  width: 50,
-                  height: 50,
-                  child: Image.asset("assets/turkey.png"),
-                ),
-              ),
-              PopupMenuItem(
-                value: 2,
-                child: SizedBox(
-                  width: 50,
-                  height: 50,
-                  child: Image.asset("assets/united-states.png"),
-                ),
-              ),
-            ],
-            icon: context.locale == Locale('tr', 'TR')
-                ? Image.asset("assets/turkey.png")
-                : Image.asset("assets/united-states.png"),
-          )
-        ],
+        title: Text(deviceLanguage["appBarText"]),
       ),
       body: GestureDetector(
         onTap: () => _onBackPressed(context),
@@ -203,7 +181,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               onPressed: () {
                                 if (inputController.text.isNotEmpty) {
                                   buildToast(
-                                    "inputController.text.isNotEmpty".tr(),
+                                    deviceLanguage[
+                                        "inputController.text.isNotEmpty"],
                                   );
                                 }
                                 setState(() {
@@ -211,8 +190,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                 });
                               },
                             ),
-                            hintText: 'hintText'.tr(),
-                            labelText: 'labelText'.tr(),
+                            hintText: deviceLanguage["hintText"],
+                            labelText: deviceLanguage["labelText"],
                             icon: Icon(Icons.add)),
                       ),
                       Row(
@@ -224,7 +203,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               control();
                             },
                             child: Text(
-                              'ButtonAdd'.tr(),
+                              deviceLanguage["ButtonAdd"],
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white),
@@ -239,14 +218,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                     setState(() {
                                       addList.clear();
                                       buildToast(
-                                        "addList.isNotEmpty".tr(),
-                                      );
+                                          deviceLanguage["addList.isNotEmpty"]);
                                     });
                                   });
                               }
                             },
                             child: Text(
-                              'ButtonClear'.tr(),
+                              deviceLanguage["ButtonClear"],
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white),
@@ -260,11 +238,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       addList.length == 0
                           ? Text(
-                              'addList.length0'.tr(),
+                              deviceLanguage["addList.length0"],
                               style: TextStyle(fontWeight: FontWeight.bold),
                             )
                           : Text(
-                              'addList.length!0'.tr() + '    ${addList.length}',
+                              deviceLanguage["addList.length!0"] +
+                                  '    ${addList.length}',
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                       Expanded(
@@ -294,7 +273,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                       setState(() {
                                         addList.remove(addList[index]);
                                       });
-                                      buildToast("IconButtonClear".tr());
+                                      buildToast(
+                                          deviceLanguage["IconButtonClear"]);
                                     },
                                   )
                                 ],
@@ -322,18 +302,20 @@ class _MyHomePageState extends State<MyHomePage> {
                           context,
                           MaterialPageRoute(
                               builder: (context) => MyKuralar(
-                                    title: "kuralarim".tr(),
-                                    kuralarimdamSil: "kuralarimdanSil".tr(),
+                                    title: deviceLanguage["kuralarim"],
+                                    kuralarimdamSil:
+                                        deviceLanguage["kuralarimdanSil"],
                                     kuralarimdanSilindi:
-                                        "kuralarimdanSilindi".tr(),
-                                    yes: "yes".tr(),
-                                    no: "no".tr(),
-                                    kayitliBirKuraYok: "kayitliBirKuraYok".tr(),
+                                        deviceLanguage["kuralarimdanSilindi"],
+                                    yes: deviceLanguage["yes"],
+                                    no: deviceLanguage["no"],
+                                    kayitliBirKuraYok:
+                                        deviceLanguage["kayitliBirKuraYok"],
                                   )),
                         );
                       },
                       child: Text(
-                        'showKura'.tr(),
+                        deviceLanguage["showKura"],
                         style: TextStyle(
                             color: Colors.white, fontWeight: FontWeight.bold),
                       ),
@@ -351,7 +333,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     title: Container(
                                       alignment: Alignment.center,
                                       child: Text(
-                                        'KuraAdiBelirleme'.tr(),
+                                        deviceLanguage["KuraAdiBelirleme"],
                                         style: TextStyle(fontSize: 17),
                                       ),
                                     ),
@@ -364,7 +346,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                             maxLength: 12,
                                             autofocus: true,
                                             decoration: InputDecoration(
-                                              labelText: 'KuraAdi'.tr(),
+                                              labelText:
+                                                  deviceLanguage["KuraAdi"],
                                               suffixIcon: IconButton(
                                                 icon: Icon(Icons.clear),
                                                 onPressed: () {
@@ -384,7 +367,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                           Navigator.pop(context);
                                           inputKuraAdiController.clear();
                                         },
-                                        child: Text('Iptal'.tr()),
+                                        child: Text(deviceLanguage["Iptal"]),
                                       ),
                                       FlatButton(
                                         color: Colors.deepOrange,
@@ -392,11 +375,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                           if (inputKuraAdiController
                                                   .text.length ==
                                               0) {
-                                            buildToast("BirAdBelirle".tr());
+                                            buildToast(
+                                                deviceLanguage["BirAdBelirle"]);
                                           } else if (inputKuraAdiController
                                                   .text.length >
                                               12) {
-                                            buildToast("karakterSiniri".tr());
+                                            buildToast(deviceLanguage[
+                                                "karakterSiniri"]);
                                           } else {
                                             for (var i = 0;
                                                 i < addList.length;
@@ -418,20 +403,21 @@ class _MyHomePageState extends State<MyHomePage> {
                                                   Navigator.pop(context);
                                                   inputKuraAdiController
                                                       .clear();
-                                                  buildToast(
-                                                      "KuraKaydedildi".tr());
+                                                  buildToast(deviceLanguage[
+                                                      "KuraKaydedildi"]);
                                                 });
                                               });
                                           }
                                         },
-                                        child: Text('ButtonBelirle'.tr()),
+                                        child: Text(
+                                            deviceLanguage["ButtonBelirle"]),
                                       )
                                     ],
                                   );
                                 });
                           },
                           child: Text(
-                            'ButtonKurayiKaydet'.tr(),
+                            deviceLanguage["ButtonKurayiKaydet"],
                             style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold),
@@ -440,14 +426,14 @@ class _MyHomePageState extends State<MyHomePage> {
                         FlatButton(
                           color: Colors.deepOrange,
                           child: Text(
-                            'ButtonKuraCekmeyiBaslat'.tr(),
+                            deviceLanguage["ButtonKuraCekmeyiBaslat"],
                             style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold),
                           ),
                           onPressed: () {
                             if (addList.length == 0) {
-                              buildToast("adayList.lentgh==0".tr());
+                              buildToast(deviceLanguage["adayList.lentgh==0"]);
                             } else {
                               kisiInputController.clear();
                               return showDialog<String>(
@@ -457,10 +443,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                       title: Container(
                                         alignment: Alignment.center,
                                         child: Text(
-                                          "secimSorusu".tr() +
+                                          deviceLanguage["secimSorusu"] +
                                               '${addList.length} ' +
-                                              'secimSorusuExtra'
-                                                  .tr(), //'${addList.length} adaydan kaç aday seçilecek ?'
+                                              deviceLanguage[
+                                                  "secimSorusuExtra"], //'${addList.length} adaydan kaç aday seçilecek ?'
                                           style: TextStyle(fontSize: 17),
                                         ),
                                       ),
@@ -476,8 +462,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                                   TextInputType.number,
                                               autofocus: true,
                                               decoration: InputDecoration(
-                                                labelText:
-                                                    'adaySayisiSorgu'.tr(),
+                                                labelText: deviceLanguage[
+                                                    "adaySayisiSorgu"],
                                                 suffixIcon: IconButton(
                                                   icon: Icon(Icons.clear),
                                                   onPressed: () {
@@ -496,7 +482,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                             Navigator.pop(context);
                                             kisiInputController.clear();
                                           },
-                                          child: Text('Iptal'.tr()),
+                                          child: Text(deviceLanguage["Iptal"]),
                                         ),
                                         FlatButton(
                                           color: Colors.deepOrange,
@@ -506,9 +492,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                                 addList.length) {
                                               buildToast(
                                                 '${addList.length} ' +
-                                                    'SuKadar'.tr() +
+                                                    deviceLanguage["SuKadar"] +
                                                     ' ${int.parse(kisiInputController.text)} ' +
-                                                    'BuKadar'.tr(),
+                                                    deviceLanguage["BuKadar"],
                                               );
                                               kisiInputController.clear();
                                             } else if (int.parse(
@@ -516,7 +502,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                 0) {
                                               buildToast(
                                                 "${kisiInputController.text} " +
-                                                    "girdi0".tr(),
+                                                    deviceLanguage["girdi0"],
                                               );
                                               kisiInputController.clear();
                                             } else {
@@ -542,16 +528,17 @@ class _MyHomePageState extends State<MyHomePage> {
                                                 MaterialPageRoute(
                                                     builder: (context) =>
                                                         SecondScreen(
-                                                          title:
-                                                              'sonuclar'.tr(),
+                                                          title: deviceLanguage[
+                                                              "sonuclar"],
                                                           yeniKuraCek:
-                                                              'newKura'.tr(),
+                                                              deviceLanguage[
+                                                                  "newKura"],
                                                         )),
                                               );
                                               reklam..show();
                                             }
                                           },
-                                          child: Text('devam'.tr()),
+                                          child: Text(deviceLanguage["devam"]),
                                         )
                                       ],
                                     );
@@ -577,14 +564,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void control() {
     if (inputController.text.length == 0) {
-      buildToast("adayGirilmedi".tr());
+      buildToast(deviceLanguage["adayGirilmedi"]);
     } else {
       if (addList.contains(inputController.text)) {
-        buildToast("adayVar".tr());
+        buildToast(deviceLanguage["adayVar"]);
       } else if (inputController.text.contains(',')) {
-        buildToast("virgul".tr());
+        buildToast(deviceLanguage["virgul"]);
       } else if (inputController.text.length > 12) {
-        buildToast("karakterSiniri.".tr());
+        buildToast(deviceLanguage["karakterSiniri"]);
       } else {
         addList.add(inputController.text);
         setState(() {
@@ -593,5 +580,81 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
     inputController.clear();
+  }
+
+  _launchPlayStore() async {
+    const url =
+        'https://play.google.com/store/apps/details?id=com.appID.KuraCek';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
+  Future<dynamic> ratingVarMi() async {
+    final TodoHelperRating _td = TodoHelperRating();
+    await _td.initDatabase();
+    List<TaskModelRating> list = await _td.getAllTask();
+    if (list.isEmpty)
+      showDialog(
+          barrierDismissible: false,
+          context: context,
+          builder: (BuildContext context) {
+            return BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: 4.0,
+                  sigmaY: 4.0,
+                ),
+                child: AlertDialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  contentPadding: const EdgeInsets.all(16),
+                  title: Text("Bazı işleri daha iyi yapmamız için"),
+                  content: Row(
+                    children: [
+                      Icon(Icons.rate_review),
+                      Text("Bizi Oylamak İster Misiniz ?")
+                    ],
+                  ),
+                  actions: <Widget>[
+                    FlatButton(
+                      child: Text(
+                        'Hiçbir Zaman',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                      onPressed: () {
+                        TaskModelRating gonderilen;
+                        gonderilen = TaskModelRating(rating: "Hiçbir Zaman.");
+                        _td.insertTask(gonderilen);
+                        Navigator.pop(context);
+                      },
+                    ),
+                    FlatButton(
+                      child: Text(
+                        'Daha Sonra',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                    ),
+                    FlatButton(
+                      child: Text(
+                        'Oyla',
+                        style: TextStyle(color: Colors.blue),
+                      ),
+                      onPressed: () async {
+                        TaskModelRating gonderilen;
+                        gonderilen = TaskModelRating(rating: "Oylandı.");
+                        _td.insertTask(gonderilen);
+                        Navigator.pop(context);
+                        _launchPlayStore();
+                      },
+                    )
+                  ],
+                ));
+          });
   }
 }

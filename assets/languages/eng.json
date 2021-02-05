@@ -6,7 +6,7 @@
     "labelText": "Enter a Candidate",
     "ButtonAdd": "Add",
     "addList.isNotEmpty":"Candidates are deleted",
-    "ButtonClear" : "Delete Everthing",
+    "ButtonClear" : "Delete Everything",
     "addList.length0": "Nothing Added Yet",
     "addList.length!0":"Candidates",
     "IconButtonClear" : "Candidate deleted.",

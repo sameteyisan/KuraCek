@@ -81,7 +81,7 @@ class _MyKuralarState extends State<MyKuralar> {
                               child: ListTile(
                                 leading: Text((index + 1).toString()),
                                 title: Text(
-                                  savedKuralar[index].name,
+                                  savedKuralar[index].rating,
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
