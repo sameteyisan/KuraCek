@@ -8,6 +8,7 @@ import 'package:KuraCek/sqflite.dart';
 import 'package:KuraCek/sqfliteRating.dart';
 import 'package:devicelocale/devicelocale.dart';
 import 'package:firebase_admob/firebase_admob.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:toast/toast.dart';
@@ -139,6 +140,7 @@ class _MyHomePageState extends State<MyHomePage> {
         });
   }
 
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   TextEditingController inputController = TextEditingController();
   TextEditingController kisiInputController = TextEditingController();
   TextEditingController inputKuraAdiController = TextEditingController();
@@ -596,7 +598,31 @@ class _MyHomePageState extends State<MyHomePage> {
     final TodoHelperRating _td = TodoHelperRating();
     await _td.initDatabase();
     List<TaskModelRating> list = await _td.getAllTask();
-    if (list.isEmpty)
+    if (list.isEmpty) {
+      String token = await _firebaseMessaging.getToken();
+      _firebaseMessaging.configure(
+        onMessage: (Map<String, dynamic> message) async {
+          print("onMessage: $message");
+        },
+        onLaunch: (Map<String, dynamic> message) async {
+          print("onLaunch: $message");
+        },
+        onResume: (Map<String, dynamic> message) async {
+          print("onResume: $message");
+        },
+      );
+      _firebaseMessaging.requestNotificationPermissions(
+          const IosNotificationSettings(
+              sound: true, badge: true, alert: true, provisional: true));
+      _firebaseMessaging.onIosSettingsRegistered
+          .listen((IosNotificationSettings settings) {
+        print("Settings registered: $settings");
+      });
+      _firebaseMessaging.getToken().then((String token) {
+        assert(token != null);
+        print("Push Messaging token: $token");
+      });
+      print("FirebaseMessaging token: $token");
       showDialog(
           barrierDismissible: false,
           context: context,
@@ -656,5 +682,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                 ));
           });
+    }
   }
 }
