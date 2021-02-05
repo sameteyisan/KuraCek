@@ -11,6 +11,7 @@ import 'package:firebase_admob/firebase_admob.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:open_app_settings/open_app_settings.dart';
 import 'package:toast/toast.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -302,18 +303,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         print(list.length);
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                              builder: (context) => MyKuralar(
-                                    title: deviceLanguage["kuralarim"],
-                                    kuralarimdamSil:
-                                        deviceLanguage["kuralarimdanSil"],
-                                    kuralarimdanSilindi:
-                                        deviceLanguage["kuralarimdanSilindi"],
-                                    yes: deviceLanguage["yes"],
-                                    no: deviceLanguage["no"],
-                                    kayitliBirKuraYok:
-                                        deviceLanguage["kayitliBirKuraYok"],
-                                  )),
+                          MaterialPageRoute(builder: (context) => MyKuralar()),
                         );
                       },
                       child: Text(
@@ -331,91 +321,100 @@ class _MyHomePageState extends State<MyHomePage> {
                             showDialog<String>(
                                 context: context,
                                 builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: Container(
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        deviceLanguage["KuraAdiBelirleme"],
-                                        style: TextStyle(fontSize: 17),
+                                  return BackdropFilter(
+                                      filter: ImageFilter.blur(
+                                        sigmaX: 4.0,
+                                        sigmaY: 4.0,
                                       ),
-                                    ),
-                                    content: Container(
-                                      height: 100,
-                                      child: Column(
-                                        children: [
-                                          TextField(
-                                            controller: inputKuraAdiController,
-                                            maxLength: 12,
-                                            autofocus: true,
-                                            decoration: InputDecoration(
-                                              labelText:
-                                                  deviceLanguage["KuraAdi"],
-                                              suffixIcon: IconButton(
-                                                icon: Icon(Icons.clear),
-                                                onPressed: () {
-                                                  inputKuraAdiController
-                                                      .clear();
-                                                },
-                                              ),
-                                            ),
+                                      child: AlertDialog(
+                                        title: Container(
+                                          alignment: Alignment.center,
+                                          child: Text(
+                                            deviceLanguage["KuraAdiBelirleme"],
+                                            style: TextStyle(fontSize: 17),
                                           ),
+                                        ),
+                                        content: Container(
+                                          height: 100,
+                                          child: Column(
+                                            children: [
+                                              TextField(
+                                                controller:
+                                                    inputKuraAdiController,
+                                                maxLength: 12,
+                                                autofocus: true,
+                                                decoration: InputDecoration(
+                                                  labelText:
+                                                      deviceLanguage["KuraAdi"],
+                                                  suffixIcon: IconButton(
+                                                    icon: Icon(Icons.clear),
+                                                    onPressed: () {
+                                                      inputKuraAdiController
+                                                          .clear();
+                                                    },
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        actions: [
+                                          FlatButton(
+                                            color: Colors.green,
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                              inputKuraAdiController.clear();
+                                            },
+                                            child:
+                                                Text(deviceLanguage["Iptal"]),
+                                          ),
+                                          FlatButton(
+                                            color: Colors.deepOrange,
+                                            onPressed: () {
+                                              if (inputKuraAdiController
+                                                      .text.length ==
+                                                  0) {
+                                                buildToast(deviceLanguage[
+                                                    "BirAdBelirle"]);
+                                              } else if (inputKuraAdiController
+                                                      .text.length >
+                                                  12) {
+                                                buildToast(deviceLanguage[
+                                                    "karakterSiniri"]);
+                                              } else {
+                                                for (var i = 0;
+                                                    i < addList.length;
+                                                    i++) {
+                                                  setState(() {
+                                                    listeler +=
+                                                        addList[i] + ', ';
+                                                  });
+                                                }
+                                                gonderilen = TaskModel(
+                                                    kuraList: listeler,
+                                                    name: inputKuraAdiController
+                                                        .text);
+                                                _todoHelper
+                                                    .insertTask(gonderilen);
+                                                reklam
+                                                  ..show().whenComplete(() {
+                                                    setState(() {
+                                                      listeler = '';
+                                                      addList.clear();
+                                                      Navigator.pop(context);
+                                                      inputKuraAdiController
+                                                          .clear();
+                                                      buildToast(deviceLanguage[
+                                                          "KuraKaydedildi"]);
+                                                    });
+                                                  });
+                                              }
+                                            },
+                                            child: Text(deviceLanguage[
+                                                "ButtonBelirle"]),
+                                          )
                                         ],
-                                      ),
-                                    ),
-                                    actions: [
-                                      FlatButton(
-                                        color: Colors.green,
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                          inputKuraAdiController.clear();
-                                        },
-                                        child: Text(deviceLanguage["Iptal"]),
-                                      ),
-                                      FlatButton(
-                                        color: Colors.deepOrange,
-                                        onPressed: () {
-                                          if (inputKuraAdiController
-                                                  .text.length ==
-                                              0) {
-                                            buildToast(
-                                                deviceLanguage["BirAdBelirle"]);
-                                          } else if (inputKuraAdiController
-                                                  .text.length >
-                                              12) {
-                                            buildToast(deviceLanguage[
-                                                "karakterSiniri"]);
-                                          } else {
-                                            for (var i = 0;
-                                                i < addList.length;
-                                                i++) {
-                                              setState(() {
-                                                listeler += addList[i] + ', ';
-                                              });
-                                            }
-                                            gonderilen = TaskModel(
-                                                kuraList: listeler,
-                                                name: inputKuraAdiController
-                                                    .text);
-                                            _todoHelper.insertTask(gonderilen);
-                                            reklam
-                                              ..show().whenComplete(() {
-                                                setState(() {
-                                                  listeler = '';
-                                                  addList.clear();
-                                                  Navigator.pop(context);
-                                                  inputKuraAdiController
-                                                      .clear();
-                                                  buildToast(deviceLanguage[
-                                                      "KuraKaydedildi"]);
-                                                });
-                                              });
-                                          }
-                                        },
-                                        child: Text(
-                                            deviceLanguage["ButtonBelirle"]),
-                                      )
-                                    ],
-                                  );
+                                      ));
                                 });
                           },
                           child: Text(
@@ -441,109 +440,127 @@ class _MyHomePageState extends State<MyHomePage> {
                               return showDialog<String>(
                                   context: context,
                                   builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      title: Container(
-                                        alignment: Alignment.center,
-                                        child: Text(
-                                          deviceLanguage["secimSorusu"] +
-                                              '${addList.length} ' +
-                                              deviceLanguage[
-                                                  "secimSorusuExtra"], //'${addList.length} adaydan kaç aday seçilecek ?'
-                                          style: TextStyle(fontSize: 17),
+                                    return BackdropFilter(
+                                        filter: ImageFilter.blur(
+                                          sigmaX: 4.0,
+                                          sigmaY: 4.0,
                                         ),
-                                      ),
-                                      content: Container(
-                                        height: 100,
-                                        child: Column(
-                                          children: [
-                                            TextField(
-                                              maxLength: 3,
-                                              onChanged: (value) {},
-                                              controller: kisiInputController,
-                                              keyboardType:
-                                                  TextInputType.number,
-                                              autofocus: true,
-                                              decoration: InputDecoration(
-                                                labelText: deviceLanguage[
-                                                    "adaySayisiSorgu"],
-                                                suffixIcon: IconButton(
-                                                  icon: Icon(Icons.clear),
-                                                  onPressed: () {
-                                                    kisiInputController.clear();
-                                                  },
-                                                ),
-                                              ),
+                                        child: AlertDialog(
+                                          title: Container(
+                                            alignment: Alignment.center,
+                                            child: Text(
+                                              deviceLanguage["secimSorusu"] +
+                                                  '${addList.length} ' +
+                                                  deviceLanguage[
+                                                      "secimSorusuExtra"], //'${addList.length} adaydan kaç aday seçilecek ?'
+                                              style: TextStyle(fontSize: 17),
                                             ),
-                                          ],
-                                        ),
-                                      ),
-                                      actions: [
-                                        FlatButton(
-                                          color: Colors.green,
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                            kisiInputController.clear();
-                                          },
-                                          child: Text(deviceLanguage["Iptal"]),
-                                        ),
-                                        FlatButton(
-                                          color: Colors.deepOrange,
-                                          onPressed: () {
-                                            if (int.parse(
-                                                    kisiInputController.text) >
-                                                addList.length) {
-                                              buildToast(
-                                                '${addList.length} ' +
-                                                    deviceLanguage["SuKadar"] +
-                                                    ' ${int.parse(kisiInputController.text)} ' +
-                                                    deviceLanguage["BuKadar"],
-                                              );
-                                              kisiInputController.clear();
-                                            } else if (int.parse(
-                                                    kisiInputController.text) <=
-                                                0) {
-                                              buildToast(
-                                                "${kisiInputController.text} " +
-                                                    deviceLanguage["girdi0"],
-                                              );
-                                              kisiInputController.clear();
-                                            } else {
-                                              selectedList = [];
-                                              count = int.parse(
-                                                  kisiInputController.text);
+                                          ),
+                                          content: Container(
+                                            height: 100,
+                                            child: Column(
+                                              children: [
+                                                TextField(
+                                                  maxLength: 3,
+                                                  onChanged: (value) {},
+                                                  controller:
+                                                      kisiInputController,
+                                                  keyboardType:
+                                                      TextInputType.number,
+                                                  autofocus: true,
+                                                  decoration: InputDecoration(
+                                                    labelText: deviceLanguage[
+                                                        "adaySayisiSorgu"],
+                                                    suffixIcon: IconButton(
+                                                      icon: Icon(Icons.clear),
+                                                      onPressed: () {
+                                                        kisiInputController
+                                                            .clear();
+                                                      },
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          actions: [
+                                            FlatButton(
+                                              color: Colors.green,
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                                kisiInputController.clear();
+                                              },
+                                              child:
+                                                  Text(deviceLanguage["Iptal"]),
+                                            ),
+                                            FlatButton(
+                                              color: Colors.deepOrange,
+                                              onPressed: () {
+                                                if (int.parse(
+                                                        kisiInputController
+                                                            .text) >
+                                                    addList.length) {
+                                                  buildToast(
+                                                    '${addList.length} ' +
+                                                        deviceLanguage[
+                                                            "SuKadar"] +
+                                                        ' ${int.parse(kisiInputController.text)} ' +
+                                                        deviceLanguage[
+                                                            "BuKadar"],
+                                                  );
+                                                  kisiInputController.clear();
+                                                } else if (int.parse(
+                                                        kisiInputController
+                                                            .text) <=
+                                                    0) {
+                                                  buildToast(
+                                                    "${kisiInputController.text} " +
+                                                        deviceLanguage[
+                                                            "girdi0"],
+                                                  );
+                                                  kisiInputController.clear();
+                                                } else {
+                                                  selectedList = [];
+                                                  count = int.parse(
+                                                      kisiInputController.text);
 
-                                              for (var i = 0; i < count; i++) {
-                                                var aday = addList[_random
-                                                    .nextInt(addList.length)];
-                                                setState(() {
-                                                  addList.remove(aday);
-                                                  selectedList.add(aday);
-                                                });
-                                              }
-                                              setState(() {
-                                                addList = [];
-                                                inputController.clear();
-                                              });
-                                              Navigator.pop(context);
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        SecondScreen(
-                                                          title: deviceLanguage[
-                                                              "sonuclar"],
-                                                          yeniKuraCek:
-                                                              deviceLanguage[
-                                                                  "newKura"],
-                                                        )),
-                                              );
-                                              reklam..show();
-                                            }
-                                          },
-                                          child: Text(deviceLanguage["devam"]),
-                                        )
-                                      ],
-                                    );
+                                                  for (var i = 0;
+                                                      i < count;
+                                                      i++) {
+                                                    var aday = addList[
+                                                        _random.nextInt(
+                                                            addList.length)];
+                                                    setState(() {
+                                                      addList.remove(aday);
+                                                      selectedList.add(aday);
+                                                    });
+                                                  }
+                                                  setState(() {
+                                                    addList = [];
+                                                    inputController.clear();
+                                                  });
+                                                  Navigator.pop(context);
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            SecondScreen(
+                                                              title:
+                                                                  deviceLanguage[
+                                                                      "sonuclar"],
+                                                              yeniKuraCek:
+                                                                  deviceLanguage[
+                                                                      "newKura"],
+                                                            )),
+                                                  );
+                                                  reklam..show();
+                                                }
+                                              },
+                                              child:
+                                                  Text(deviceLanguage["devam"]),
+                                            )
+                                          ],
+                                        ));
                                   });
                             }
                           },
@@ -637,17 +654,60 @@ class _MyHomePageState extends State<MyHomePage> {
                     borderRadius: BorderRadius.circular(15.0),
                   ),
                   contentPadding: const EdgeInsets.all(16),
-                  title: Text("Bazı işleri daha iyi yapmamız için"),
+                  title: Text(deviceLanguage["bildirimSesAc"]),
+                  content: Text(deviceLanguage["bildirimYardim"]),
+                  actions: <Widget>[
+                    FlatButton(
+                      child: Text(
+                        deviceLanguage["oylamaDahaSonra"],
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                    ),
+                    FlatButton(
+                      child: Text(
+                        deviceLanguage["bildirimSesAc"],
+                        style: TextStyle(color: Colors.blue),
+                      ),
+                      onPressed: () async {
+                        TaskModelRating gonderilen;
+                        gonderilen = TaskModelRating(rating: "Bildirimler.");
+                        await _td.insertTask(gonderilen);
+                        Navigator.pop(context);
+                        await OpenAppSettings.openNotificationSettings();
+                      },
+                    )
+                  ],
+                ));
+          });
+    } else if (list.length == 1) {
+      showDialog(
+          barrierDismissible: false,
+          context: context,
+          builder: (BuildContext context) {
+            return BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: 4.0,
+                  sigmaY: 4.0,
+                ),
+                child: AlertDialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  contentPadding: const EdgeInsets.all(16),
+                  title: Text(deviceLanguage["oylamaMemnun"]),
                   content: Row(
                     children: [
                       Icon(Icons.rate_review),
-                      Text("Bizi Oylamak İster Misiniz ?")
+                      Text(deviceLanguage["oylamaistemek"])
                     ],
                   ),
                   actions: <Widget>[
                     FlatButton(
                       child: Text(
-                        'Hiçbir Zaman',
+                        deviceLanguage["oylamaAsla"],
                         style: TextStyle(color: Colors.grey[600]),
                       ),
                       onPressed: () {
@@ -659,7 +719,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     FlatButton(
                       child: Text(
-                        'Daha Sonra',
+                        deviceLanguage["oylamaDahaSonra"],
                         style: TextStyle(color: Colors.grey[600]),
                       ),
                       onPressed: () {
@@ -668,7 +728,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     FlatButton(
                       child: Text(
-                        'Oyla',
+                        deviceLanguage["oylamaRating"],
                         style: TextStyle(color: Colors.blue),
                       ),
                       onPressed: () async {

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:KuraCek/sqflite.dart';
 import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
@@ -9,23 +11,6 @@ var savedKuralar = [];
 InterstitialAd myKuralarReklam;
 
 class MyKuralar extends StatefulWidget {
-  final title;
-  final kuralarimdamSil;
-  final kuralarimdanSilindi;
-  final yes;
-  final no;
-  final kayitliBirKuraYok;
-
-  const MyKuralar(
-      {Key key,
-      this.title,
-      this.kuralarimdamSil,
-      this.kuralarimdanSilindi,
-      this.yes,
-      this.no,
-      this.kayitliBirKuraYok})
-      : super(key: key);
-
   @override
   _MyKuralarState createState() => _MyKuralarState();
 }
@@ -46,7 +31,7 @@ class _MyKuralarState extends State<MyKuralar> {
               Navigator.pop(context);
             },
           ),
-          title: Text(widget.title),
+          title: Text(deviceLanguage["kuralarim"]),
         ),
         body: savedKuralar.length != 0
             ? Container(
@@ -81,7 +66,7 @@ class _MyKuralarState extends State<MyKuralar> {
                               child: ListTile(
                                 leading: Text((index + 1).toString()),
                                 title: Text(
-                                  savedKuralar[index].rating,
+                                  savedKuralar[index].name,
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -98,38 +83,48 @@ class _MyKuralarState extends State<MyKuralar> {
                                     showDialog(
                                         context: context,
                                         builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            title: Text(widget.kuralarimdamSil),
-                                            actions: [
-                                              FlatButton(
-                                                color: Colors.green,
-                                                onPressed: () async {
-                                                  _todoHelper.deleteTask(
-                                                      savedKuralar[index].id);
-                                                  List<TaskModel> list =
-                                                      await _todoHelper
-                                                          .getAllTask();
-                                                  setState(() {
-                                                    savedKuralar = list;
-                                                  });
-                                                  Navigator.pop(context);
-                                                  myKuralarReklam
-                                                    ..show().whenComplete(() {
-                                                      buildToast(widget
-                                                          .kuralarimdanSilindi);
-                                                    });
-                                                },
-                                                child: Text(widget.yes),
+                                          return BackdropFilter(
+                                              filter: ImageFilter.blur(
+                                                sigmaX: 4.0,
+                                                sigmaY: 4.0,
                                               ),
-                                              FlatButton(
-                                                color: Colors.deepOrange,
-                                                onPressed: () {
-                                                  Navigator.pop(context);
-                                                },
-                                                child: Text(widget.no),
-                                              ),
-                                            ],
-                                          );
+                                              child: AlertDialog(
+                                                title: Text(deviceLanguage[
+                                                    "kuralarimdanSil"]),
+                                                actions: [
+                                                  FlatButton(
+                                                    color: Colors.green,
+                                                    onPressed: () async {
+                                                      _todoHelper.deleteTask(
+                                                          savedKuralar[index]
+                                                              .id);
+                                                      List<TaskModel> list =
+                                                          await _todoHelper
+                                                              .getAllTask();
+                                                      setState(() {
+                                                        savedKuralar = list;
+                                                      });
+                                                      Navigator.pop(context);
+                                                      myKuralarReklam
+                                                        ..show()
+                                                            .whenComplete(() {
+                                                          buildToast(deviceLanguage[
+                                                              "kuralarimdanSilindi"]);
+                                                        });
+                                                    },
+                                                    child: Text(
+                                                        deviceLanguage["yes"]),
+                                                  ),
+                                                  FlatButton(
+                                                    color: Colors.deepOrange,
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                    },
+                                                    child: Text(
+                                                        deviceLanguage["no"]),
+                                                  ),
+                                                ],
+                                              ));
                                         });
                                   },
                                   icon: Icon(Icons.delete),
@@ -151,7 +146,7 @@ class _MyKuralarState extends State<MyKuralar> {
               )
             : Center(
                 child: Text(
-                  widget.kayitliBirKuraYok,
+                  deviceLanguage["kayitliBirKuraYok"],
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.grey,
