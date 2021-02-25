@@ -2,17 +2,18 @@ import 'dart:convert';
 
 import 'dart:math';
 import 'dart:ui';
+import 'package:KuraCek/Database/sqflite.dart';
+import 'package:KuraCek/Database/sqfliteRating.dart';
 import 'package:KuraCek/myKuralar.dart';
 import 'package:KuraCek/second_screen.dart';
-import 'package:KuraCek/sqflite.dart';
-import 'package:KuraCek/sqfliteRating.dart';
+import 'package:KuraCek/widget/const.dart';
 import 'package:devicelocale/devicelocale.dart';
 import 'package:firebase_admob/firebase_admob.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:open_app_settings/open_app_settings.dart';
-import 'package:toast/toast.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 var deviceLanguage;
@@ -84,7 +85,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return InterstitialAd(
       targetingInfo: targetingInfo,
       adUnitId:
-          InterstitialAd.testAdUnitId, //ca-app-pub-4589290119610129/5977252855
+          "ca-app-pub-4589290119610129/5977252855", //ca-app-pub-4589290119610129/5977252855
       listener: (MobileAdEvent event) {
         if (event == MobileAdEvent.failedToLoad) {
           myInterstitial..load();
@@ -115,7 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     FirebaseAdMob.instance.initialize(
         appId:
-            FirebaseAdMob.testAppId); //ca-app-pub-4589290119610129~8880007547
+            "ca-app-pub-4589290119610129~8880007547"); //ca-app-pub-4589290119610129~8880007547
     myBanner = buildBannerAd()..load();
     myInterstitial = buildInterstitialAd()..load();
   }
@@ -132,7 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return BannerAd(
         targetingInfo: targetingInfo,
         adUnitId:
-            BannerAd.testAdUnitId, //ca-app-pub-4589290119610129/6502664756
+            "ca-app-pub-4589290119610129/6502664756", //ca-app-pub-4589290119610129/6502664756
         size: AdSize.largeBanner,
         listener: (MobileAdEvent event) {
           if (event == MobileAdEvent.loaded) {
@@ -154,445 +155,503 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       addList = addList;
     });
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(deviceLanguage["appBarText"]),
-      ),
-      body: GestureDetector(
-        onTap: () => _onBackPressed(context),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Container(
-                height: MediaQuery.of(context).size.height - 240,
-                child: Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Column(
-                    children: [
-                      TextField(
-                        textInputAction: TextInputAction.done,
-                        onEditingComplete: () {
-                          control();
+    return WillPopScope(
+      // ignore: missing_return
+      onWillPop: () {
+        showDialog(
+            barrierDismissible: false,
+            context: context,
+            builder: (BuildContext context) {
+              return BackdropFilter(
+                  filter: ImageFilter.blur(
+                    sigmaX: 4.0,
+                    sigmaY: 4.0,
+                  ),
+                  child: AlertDialog(
+                    shape: shape,
+                    title: Text(deviceLanguage["areYouSure"]),
+                    content: Text(deviceLanguage["closeNow"]),
+                    actions: <Widget>[
+                      FlatButton(
+                        color: btnOrange,
+                        child: Text(
+                          deviceLanguage["no"],
+                          style: boldWhite,
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
                         },
-                        controller: inputController,
-                        maxLength: 12,
-                        decoration: InputDecoration(
-                            suffixIcon: IconButton(
-                              splashRadius: 25,
-                              icon: Icon(Icons.delete),
-                              onPressed: () {
-                                if (inputController.text.isNotEmpty) {
-                                  buildToast(
-                                    deviceLanguage[
-                                        "inputController.text.isNotEmpty"],
-                                  );
-                                }
-                                setState(() {
-                                  inputController.clear();
-                                });
-                              },
-                            ),
-                            hintText: deviceLanguage["hintText"],
-                            labelText: deviceLanguage["labelText"],
-                            icon: Icon(Icons.add)),
                       ),
-                      Row(
+                      FlatButton(
+                        color: btnGreen,
+                        child: Text(
+                          deviceLanguage["yes"],
+                          style: boldWhite,
+                        ),
+                        onPressed: () async {
+                          SystemNavigator.pop();
+                        },
+                      )
+                    ],
+                  ));
+            });
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text(deviceLanguage["appBarText"]),
+        ),
+        body: GestureDetector(
+          onTap: () => _onBackPressed(context),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Container(
+                  height: MediaQuery.of(context).size.height - 240,
+                  child: Padding(
+                    padding: EdgeInsets.all(10),
+                    child: Column(
+                      children: [
+                        TextField(
+                          textInputAction: TextInputAction.done,
+                          onEditingComplete: () {
+                            control();
+                          },
+                          controller: inputController,
+                          maxLength: 12,
+                          decoration: InputDecoration(
+                              suffixIcon: IconButton(
+                                splashRadius: 20,
+                                icon: Icon(
+                                  LineAwesomeIcons.broom,
+                                ),
+                                onPressed: () {
+                                  if (inputController.text.isNotEmpty) {
+                                    buildToast(
+                                      context,
+                                      deviceLanguage[
+                                          "inputController.text.isNotEmpty"],
+                                    );
+                                  }
+                                  setState(() {
+                                    inputController.clear();
+                                  });
+                                },
+                              ),
+                              hintText: deviceLanguage["hintText"],
+                              labelText: deviceLanguage["labelText"],
+                              icon: Icon(
+                                Icons.add,
+                              )),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            FlatButton(
+                              color: btnGreen,
+                              onPressed: () async {
+                                control();
+                              },
+                              child: buttonText(deviceLanguage["ButtonAdd"]),
+                            ),
+                            FlatButton(
+                              color: btnOrange,
+                              onPressed: () {
+                                if (addList.isNotEmpty) {
+                                  reklam
+                                    ..show().whenComplete(() {
+                                      setState(() {
+                                        addList.clear();
+                                        buildToast(
+                                            context,
+                                            deviceLanguage[
+                                                "addList.isNotEmpty"]);
+                                      });
+                                    });
+                                }
+                              },
+                              child: buttonText(deviceLanguage["ButtonClear"]),
+                            ),
+                          ],
+                        ),
+                        Divider(
+                          height: 20,
+                          indent: 500.0,
+                        ),
+                        addList.length == 0
+                            ? Text(
+                                deviceLanguage["addList.length0"],
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              )
+                            : Text(
+                                deviceLanguage["addList.length!0"] +
+                                    '    ${addList.length}',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                        Expanded(
+                          child: Theme(
+                            data: themeScrollBar,
+                            child: Scrollbar(
+                              thickness: 4,
+                              child: ListView.separated(
+                                  shrinkWrap: true,
+                                  itemBuilder: (context, index) {
+                                    // ignore: missing_required_param
+                                    return FlatButton(
+                                        child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          '${index + 1}.  ' +
+                                              '${addList[index]}'.toUpperCase(),
+                                          style: TextStyle(
+                                              color: Colors.primaries[Random()
+                                                  .nextInt(Colors
+                                                      .primaries.length)]),
+                                        ),
+                                        IconButton(
+                                          highlightColor: btnOrange,
+                                          splashRadius: 20,
+                                          iconSize: 20,
+                                          icon: Icon(LineAwesomeIcons.trash),
+                                          onPressed: () {
+                                            setState(() {
+                                              addList.remove(addList[index]);
+                                            });
+                                            buildToast(
+                                                context,
+                                                deviceLanguage[
+                                                    "IconButtonClear"]);
+                                          },
+                                        )
+                                      ],
+                                    ));
+                                  },
+                                  separatorBuilder: (context, index) => Divider(
+                                        height: 0,
+                                        indent: 500,
+                                      ),
+                                  itemCount: addList.length),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                addList.length == 0
+                    ? FlatButton(
+                        color: btnOrange,
+                        onPressed: () async {
+                          reklam..show();
+                          List<TaskModel> list = await _todoHelper.getAllTask();
+                          savedKuralar = list;
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => MyKuralar()),
+                          );
+                        },
+                        child: buttonText(deviceLanguage["showKura"]),
+                      )
+                    : Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           FlatButton(
-                            color: Colors.green,
+                            color: btnOrange,
                             onPressed: () async {
-                              control();
+                              kuraAdiBelirle(context, _todoHelper, reklam);
                             },
-                            child: Text(
-                              deviceLanguage["ButtonAdd"],
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white),
-                            ),
+                            child: buttonText(
+                                deviceLanguage["ButtonKurayiKaydet"]),
                           ),
                           FlatButton(
-                            color: Colors.red,
+                            color: btnOrange,
+                            child: buttonText(
+                                deviceLanguage["ButtonKuraCekmeyiBaslat"]),
                             onPressed: () {
-                              if (addList.isNotEmpty) {
-                                reklam
-                                  ..show().whenComplete(() {
-                                    setState(() {
-                                      addList.clear();
-                                      buildToast(
-                                          deviceLanguage["addList.isNotEmpty"]);
-                                    });
-                                  });
-                              }
-                            },
-                            child: Text(
-                              deviceLanguage["ButtonClear"],
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Divider(
-                        height: 20,
-                        indent: 500.0,
-                      ),
-                      addList.length == 0
-                          ? Text(
-                              deviceLanguage["addList.length0"],
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            )
-                          : Text(
-                              deviceLanguage["addList.length!0"] +
-                                  '    ${addList.length}',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                      Expanded(
-                        child: ListView.separated(
-                            shrinkWrap: true,
-                            itemBuilder: (context, index) {
-                              // ignore: missing_required_param
-                              return FlatButton(
-                                  child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    '${index + 1}.  ' +
-                                        '${addList[index]}'.toUpperCase(),
-                                    style: TextStyle(
-                                        color: Colors.primaries[Random()
-                                            .nextInt(Colors.primaries.length)]),
-                                  ),
-                                  IconButton(
-                                    highlightColor: Colors.deepOrange,
-                                    splashRadius: 20,
-                                    iconSize: 20,
-                                    color: Colors.black,
-                                    icon: Icon(Icons.clear),
-                                    onPressed: () {
-                                      setState(() {
-                                        addList.remove(addList[index]);
-                                      });
-                                      buildToast(
-                                          deviceLanguage["IconButtonClear"]);
-                                    },
-                                  )
-                                ],
-                              ));
-                            },
-                            separatorBuilder: (context, index) => Divider(
-                                  height: 0,
-                                  indent: 500,
-                                ),
-                            itemCount: addList.length),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              addList.length == 0
-                  ? FlatButton(
-                      color: Colors.deepOrange,
-                      onPressed: () async {
-                        reklam..show();
-                        List<TaskModel> list = await _todoHelper.getAllTask();
-                        savedKuralar = list;
-                        print(list.length);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => MyKuralar()),
-                        );
-                      },
-                      child: Text(
-                        deviceLanguage["showKura"],
-                        style: TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        FlatButton(
-                          color: Colors.deepOrange,
-                          onPressed: () async {
-                            showDialog<String>(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return BackdropFilter(
-                                      filter: ImageFilter.blur(
-                                        sigmaX: 4.0,
-                                        sigmaY: 4.0,
-                                      ),
-                                      child: AlertDialog(
-                                        title: Container(
-                                          alignment: Alignment.center,
-                                          child: Text(
-                                            deviceLanguage["KuraAdiBelirleme"],
-                                            style: TextStyle(fontSize: 17),
+                              if (addList.length == 0) {
+                                buildToast(
+                                  context,
+                                  deviceLanguage["adayList.lentgh==0"],
+                                );
+                              } else {
+                                kisiInputController.clear();
+                                return showDialog<String>(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return BackdropFilter(
+                                          filter: ImageFilter.blur(
+                                            sigmaX: 4.0,
+                                            sigmaY: 4.0,
                                           ),
-                                        ),
-                                        content: Container(
-                                          height: 100,
-                                          child: Column(
-                                            children: [
-                                              TextField(
-                                                controller:
-                                                    inputKuraAdiController,
-                                                maxLength: 12,
-                                                autofocus: true,
-                                                decoration: InputDecoration(
-                                                  labelText:
-                                                      deviceLanguage["KuraAdi"],
-                                                  suffixIcon: IconButton(
-                                                    icon: Icon(Icons.clear),
-                                                    onPressed: () {
-                                                      inputKuraAdiController
-                                                          .clear();
-                                                    },
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        actions: [
-                                          FlatButton(
-                                            color: Colors.green,
-                                            onPressed: () {
-                                              Navigator.pop(context);
-                                              inputKuraAdiController.clear();
-                                            },
-                                            child:
-                                                Text(deviceLanguage["Iptal"]),
-                                          ),
-                                          FlatButton(
-                                            color: Colors.deepOrange,
-                                            onPressed: () {
-                                              if (inputKuraAdiController
-                                                      .text.length ==
-                                                  0) {
-                                                buildToast(deviceLanguage[
-                                                    "BirAdBelirle"]);
-                                              } else if (inputKuraAdiController
-                                                      .text.length >
-                                                  12) {
-                                                buildToast(deviceLanguage[
-                                                    "karakterSiniri"]);
-                                              } else {
-                                                for (var i = 0;
-                                                    i < addList.length;
-                                                    i++) {
-                                                  setState(() {
-                                                    listeler +=
-                                                        addList[i] + ', ';
-                                                  });
-                                                }
-                                                gonderilen = TaskModel(
-                                                    kuraList: listeler,
-                                                    name: inputKuraAdiController
-                                                        .text);
-                                                _todoHelper
-                                                    .insertTask(gonderilen);
-                                                reklam
-                                                  ..show().whenComplete(() {
-                                                    setState(() {
-                                                      listeler = '';
-                                                      addList.clear();
-                                                      Navigator.pop(context);
-                                                      inputKuraAdiController
-                                                          .clear();
-                                                      buildToast(deviceLanguage[
-                                                          "KuraKaydedildi"]);
-                                                    });
-                                                  });
-                                              }
-                                            },
-                                            child: Text(deviceLanguage[
-                                                "ButtonBelirle"]),
-                                          )
-                                        ],
-                                      ));
-                                });
-                          },
-                          child: Text(
-                            deviceLanguage["ButtonKurayiKaydet"],
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        FlatButton(
-                          color: Colors.deepOrange,
-                          child: Text(
-                            deviceLanguage["ButtonKuraCekmeyiBaslat"],
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          onPressed: () {
-                            if (addList.length == 0) {
-                              buildToast(deviceLanguage["adayList.lentgh==0"]);
-                            } else {
-                              kisiInputController.clear();
-                              return showDialog<String>(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return BackdropFilter(
-                                        filter: ImageFilter.blur(
-                                          sigmaX: 4.0,
-                                          sigmaY: 4.0,
-                                        ),
-                                        child: AlertDialog(
-                                          title: Container(
-                                            alignment: Alignment.center,
-                                            child: Text(
+                                          child: AlertDialog(
+                                            shape: shape,
+                                            title: Text(
                                               deviceLanguage["secimSorusu"] +
                                                   '${addList.length} ' +
                                                   deviceLanguage[
-                                                      "secimSorusuExtra"], //'${addList.length} adaydan kaç aday seçilecek ?'
-                                              style: TextStyle(fontSize: 17),
+                                                      "secimSorusuExtra"],
+                                              style: TextStyle(
+                                                  fontSize: 17,
+                                                  color: Colors.black),
                                             ),
-                                          ),
-                                          content: Container(
-                                            height: 100,
-                                            child: Column(
-                                              children: [
-                                                TextField(
-                                                  maxLength: 3,
-                                                  onChanged: (value) {},
-                                                  controller:
-                                                      kisiInputController,
-                                                  keyboardType:
-                                                      TextInputType.number,
-                                                  autofocus: true,
-                                                  decoration: InputDecoration(
-                                                    labelText: deviceLanguage[
-                                                        "adaySayisiSorgu"],
-                                                    suffixIcon: IconButton(
-                                                      icon: Icon(Icons.clear),
-                                                      onPressed: () {
-                                                        kisiInputController
-                                                            .clear();
-                                                      },
+                                            content: Container(
+                                              height: 100,
+                                              child: Column(
+                                                children: [
+                                                  TextField(
+                                                    maxLength: 8,
+                                                    onChanged: (value) {},
+                                                    controller:
+                                                        kisiInputController,
+                                                    keyboardType:
+                                                        TextInputType.number,
+                                                    autofocus: true,
+                                                    decoration: InputDecoration(
+                                                      labelText: deviceLanguage[
+                                                          "adaySayisiSorgu"],
+                                                      suffixIcon: IconButton(
+                                                        splashRadius: 20,
+                                                        icon: Icon(
+                                                          LineAwesomeIcons
+                                                              .broom,
+                                                        ),
+                                                        onPressed: () {
+                                                          kisiInputController
+                                                              .clear();
+                                                        },
+                                                      ),
                                                     ),
                                                   ),
-                                                ),
-                                              ],
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                          actions: [
-                                            FlatButton(
-                                              color: Colors.green,
-                                              onPressed: () {
-                                                Navigator.pop(context);
-                                                kisiInputController.clear();
-                                              },
-                                              child:
-                                                  Text(deviceLanguage["Iptal"]),
-                                            ),
-                                            FlatButton(
-                                              color: Colors.deepOrange,
-                                              onPressed: () {
-                                                if (int.parse(
-                                                        kisiInputController
-                                                            .text) >
-                                                    addList.length) {
-                                                  buildToast(
-                                                    '${addList.length} ' +
-                                                        deviceLanguage[
-                                                            "SuKadar"] +
-                                                        ' ${int.parse(kisiInputController.text)} ' +
-                                                        deviceLanguage[
-                                                            "BuKadar"],
-                                                  );
-                                                  kisiInputController.clear();
-                                                } else if (int.parse(
-                                                        kisiInputController
-                                                            .text) <=
-                                                    0) {
-                                                  buildToast(
-                                                    "${kisiInputController.text} " +
-                                                        deviceLanguage[
-                                                            "girdi0"],
-                                                  );
-                                                  kisiInputController.clear();
-                                                } else {
-                                                  selectedList = [];
-                                                  count = int.parse(
-                                                      kisiInputController.text);
-
-                                                  for (var i = 0;
-                                                      i < count;
-                                                      i++) {
-                                                    var aday = addList[
-                                                        _random.nextInt(
-                                                            addList.length)];
-                                                    setState(() {
-                                                      addList.remove(aday);
-                                                      selectedList.add(aday);
-                                                    });
-                                                  }
-                                                  setState(() {
-                                                    addList = [];
-                                                    inputController.clear();
-                                                  });
+                                            actions: [
+                                              FlatButton(
+                                                color: btnGreen,
+                                                onPressed: () {
                                                   Navigator.pop(context);
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            SecondScreen(
-                                                              title:
-                                                                  deviceLanguage[
-                                                                      "sonuclar"],
-                                                              yeniKuraCek:
-                                                                  deviceLanguage[
-                                                                      "newKura"],
-                                                            )),
-                                                  );
-                                                  reklam..show();
-                                                }
-                                              },
-                                              child:
-                                                  Text(deviceLanguage["devam"]),
-                                            )
-                                          ],
-                                        ));
-                                  });
-                            }
-                          },
-                        )
-                      ],
-                    ),
-            ],
+                                                  kisiInputController.clear();
+                                                },
+                                                child: Text(
+                                                    deviceLanguage["Iptal"]),
+                                              ),
+                                              FlatButton(
+                                                color: btnOrange,
+                                                onPressed: () {
+                                                  try {
+                                                    if (int.parse(
+                                                            kisiInputController
+                                                                .text) >
+                                                        addList.length) {
+                                                      buildToast(
+                                                        context,
+                                                        '${addList.length} ' +
+                                                            deviceLanguage[
+                                                                "SuKadar"] +
+                                                            ' ${int.parse(kisiInputController.text)} ' +
+                                                            deviceLanguage[
+                                                                "BuKadar"],
+                                                      );
+                                                      kisiInputController
+                                                          .clear();
+                                                    } else if (int.parse(
+                                                            kisiInputController
+                                                                .text) <=
+                                                        0) {
+                                                      buildToast(
+                                                        context,
+                                                        "${kisiInputController.text} " +
+                                                            deviceLanguage[
+                                                                "girdi0"],
+                                                      );
+                                                      kisiInputController
+                                                          .clear();
+                                                    } else {
+                                                      selectedList = [];
+                                                      count = int.parse(
+                                                          kisiInputController
+                                                              .text);
+
+                                                      for (var i = 0;
+                                                          i < count;
+                                                          i++) {
+                                                        var aday = addList[
+                                                            _random.nextInt(
+                                                                addList
+                                                                    .length)];
+                                                        setState(() {
+                                                          addList.remove(aday);
+                                                          selectedList
+                                                              .add(aday);
+                                                        });
+                                                      }
+                                                      setState(() {
+                                                        addList = [];
+                                                        inputController.clear();
+                                                      });
+                                                      Navigator.pop(context);
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                SecondScreen()),
+                                                      );
+                                                      reklam..show();
+                                                    }
+                                                  } catch (_) {
+                                                    buildToast(context,
+                                                        "Bir sayı girin.");
+                                                  }
+                                                },
+                                                child: Text(
+                                                    deviceLanguage["devam"]),
+                                              )
+                                            ],
+                                          ));
+                                    });
+                              }
+                            },
+                          )
+                        ],
+                      ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  void buildToast(String text) => Toast.show(
-        text,
-        context,
-        duration: Toast.LENGTH_LONG,
-        gravity: Toast.TOP,
-      );
+  Future<String> kuraAdiBelirle(
+      BuildContext context, TodoHelper _todoHelper, InterstitialAd reklam) {
+    return showDialog<String>(
+        context: context,
+        builder: (BuildContext context) {
+          return BackdropFilter(
+              filter: ImageFilter.blur(
+                sigmaX: 4.0,
+                sigmaY: 4.0,
+              ),
+              child: AlertDialog(
+                shape: shape,
+                title: Text(
+                  deviceLanguage["KuraAdiBelirleme"],
+                  style: TextStyle(fontSize: 17, color: Colors.black),
+                ),
+                content: Container(
+                  height: 100,
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: inputKuraAdiController,
+                        maxLength: 12,
+                        autofocus: true,
+                        decoration: InputDecoration(
+                          labelText: deviceLanguage["KuraAdi"],
+                          suffixIcon: IconButton(
+                            splashRadius: 20,
+                            icon: Icon(
+                              LineAwesomeIcons.broom,
+                            ),
+                            onPressed: () {
+                              inputKuraAdiController.clear();
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  FlatButton(
+                    color: btnGreen,
+                    onPressed: () {
+                      Navigator.pop(context);
+                      inputKuraAdiController.clear();
+                    },
+                    child: Text(deviceLanguage["Iptal"]),
+                  ),
+                  FlatButton(
+                    color: btnOrange,
+                    onPressed: () {
+                      if (inputKuraAdiController.text.length == 0) {
+                        buildToast(
+                          context,
+                          deviceLanguage["BirAdBelirle"],
+                        );
+                      } else if (inputKuraAdiController.text.length > 12) {
+                        buildToast(
+                          context,
+                          deviceLanguage["karakterSiniri"],
+                        );
+                      } else {
+                        for (var i = 0; i < addList.length; i++) {
+                          setState(() {
+                            listeler += addList[i] + ', ';
+                          });
+                        }
+                        gonderilen = TaskModel(
+                            kuraList: listeler,
+                            name: inputKuraAdiController.text);
+                        _todoHelper.insertTask(gonderilen);
+                        reklam
+                          ..show().whenComplete(() {
+                            setState(() {
+                              listeler = '';
+                              addList.clear();
+                              Navigator.pop(context);
+                              inputKuraAdiController.clear();
+                              buildToast(
+                                context,
+                                deviceLanguage["KuraKaydedildi"],
+                              );
+                            });
+                          });
+                      }
+                    },
+                    child: Text(deviceLanguage["ButtonBelirle"]),
+                  )
+                ],
+              ));
+        });
+  }
+
+  Text buttonText(String text) {
+    return Text(
+      text,
+      style: boldWhite,
+    );
+  }
 
   void control() {
-    if (inputController.text.length == 0) {
-      buildToast(deviceLanguage["adayGirilmedi"]);
+    if (inputController.text.trim().length == 0) {
+      buildToast(
+        context,
+        deviceLanguage["adayGirilmedi"],
+      );
     } else {
-      if (addList.contains(inputController.text)) {
-        buildToast(deviceLanguage["adayVar"]);
+      if (addList.contains(inputController.text.trim())) {
+        buildToast(
+          context,
+          deviceLanguage["adayVar"],
+        );
       } else if (inputController.text.contains(',')) {
-        buildToast(deviceLanguage["virgul"]);
+        buildToast(
+          context,
+          deviceLanguage["virgul"],
+        );
       } else if (inputController.text.length > 12) {
-        buildToast(deviceLanguage["karakterSiniri"]);
+        buildToast(
+          context,
+          deviceLanguage["karakterSiniri"],
+        );
       } else {
-        addList.add(inputController.text);
+        addList.add(inputController.text.trim());
         setState(() {
           addList = addList;
         });
@@ -640,108 +699,81 @@ class _MyHomePageState extends State<MyHomePage> {
         print("Push Messaging token: $token");
       });
       print("FirebaseMessaging token: $token");
-      showDialog(
-          barrierDismissible: false,
-          context: context,
-          builder: (BuildContext context) {
-            return BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: 4.0,
-                  sigmaY: 4.0,
-                ),
-                child: AlertDialog(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  contentPadding: const EdgeInsets.all(16),
-                  title: Text(deviceLanguage["bildirimSesAc"]),
-                  content: Text(deviceLanguage["bildirimYardim"]),
-                  actions: <Widget>[
-                    FlatButton(
-                      child: Text(
-                        deviceLanguage["oylamaDahaSonra"],
-                        style: TextStyle(color: Colors.grey[600]),
-                      ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
+      await ratingDialog(
+          _td,
+          deviceLanguage["bildirimSesAc"],
+          Text(deviceLanguage["bildirimYardim"]),
+          deviceLanguage["bildirimSesAc"]);
+    } else if (list.length == 1) {
+      await ratingDialog(
+          _td,
+          deviceLanguage["oylamaMemnun"],
+          Row(
+            children: [
+              Icon(
+                LineAwesomeIcons.star,
+              ),
+              Text(deviceLanguage["oylamaistemek"])
+            ],
+          ),
+          deviceLanguage["oylamaRating"]);
+    }
+  }
+
+  ratingDialog(
+    TodoHelperRating _td,
+    String title,
+    dynamic content,
+    String btnText,
+  ) async {
+    showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (BuildContext context) {
+          return BackdropFilter(
+              filter: ImageFilter.blur(
+                sigmaX: 4.0,
+                sigmaY: 4.0,
+              ),
+              child: AlertDialog(
+                shape: shape,
+                title: Text(title),
+                content: content,
+                actions: <Widget>[
+                  FlatButton(
+                    color: btnOrange,
+                    child: Text(
+                      deviceLanguage["oylamaDahaSonra"],
+                      style: boldWhite,
                     ),
-                    FlatButton(
-                      child: Text(
-                        deviceLanguage["bildirimSesAc"],
-                        style: TextStyle(color: Colors.blue),
-                      ),
-                      onPressed: () async {
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                  FlatButton(
+                    color: btnGreen,
+                    child: Text(
+                      btnText,
+                      style: boldWhite,
+                    ),
+                    onPressed: () async {
+                      if (btnText == deviceLanguage["bildirimSesAc"]) {
                         TaskModelRating gonderilen;
                         gonderilen = TaskModelRating(rating: "Bildirimler.");
                         await _td.insertTask(gonderilen);
                         Navigator.pop(context);
                         await OpenAppSettings.openNotificationSettings();
-                      },
-                    )
-                  ],
-                ));
-          });
-    } else if (list.length == 1) {
-      showDialog(
-          barrierDismissible: false,
-          context: context,
-          builder: (BuildContext context) {
-            return BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: 4.0,
-                  sigmaY: 4.0,
-                ),
-                child: AlertDialog(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  contentPadding: const EdgeInsets.all(16),
-                  title: Text(deviceLanguage["oylamaMemnun"]),
-                  content: Row(
-                    children: [
-                      Icon(Icons.rate_review),
-                      Text(deviceLanguage["oylamaistemek"])
-                    ],
-                  ),
-                  actions: <Widget>[
-                    FlatButton(
-                      child: Text(
-                        deviceLanguage["oylamaAsla"],
-                        style: TextStyle(color: Colors.grey[600]),
-                      ),
-                      onPressed: () {
-                        TaskModelRating gonderilen;
-                        gonderilen = TaskModelRating(rating: "Hiçbir Zaman.");
-                        _td.insertTask(gonderilen);
-                        Navigator.pop(context);
-                      },
-                    ),
-                    FlatButton(
-                      child: Text(
-                        deviceLanguage["oylamaDahaSonra"],
-                        style: TextStyle(color: Colors.grey[600]),
-                      ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                    FlatButton(
-                      child: Text(
-                        deviceLanguage["oylamaRating"],
-                        style: TextStyle(color: Colors.blue),
-                      ),
-                      onPressed: () async {
+                      } else if (btnText == deviceLanguage["oylamaRating"]) {
                         TaskModelRating gonderilen;
                         gonderilen = TaskModelRating(rating: "Oylandı.");
                         _td.insertTask(gonderilen);
                         Navigator.pop(context);
                         _launchPlayStore();
-                      },
-                    )
-                  ],
-                ));
-          });
-    }
+                      }
+                    },
+                  )
+                ],
+              ));
+        });
   }
 }

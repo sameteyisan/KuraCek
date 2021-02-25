@@ -41,9 +41,12 @@
     "newKura": "Cut a New Lots",
     "oylamaAsla": "Never",
     "oylamaDahaSonra": "Later",
-    "oylamaistemek": "  Would you like to rating ?",
+    "oylamaistemek": "  Would you like to rate ?",
     "oylamaRating": "Rating",
     "oylamaMemnun": "Are you satisfied with the application?",
     "bildirimSesAc": "Unmute Notifications",
-    "bildirimYardim": "Notifications will help us to reach you."
+    "bildirimYardim": "Notifications will help us to reach you.",
+    "sayidegil": "This is not a number.",
+    "areYouSure": "Are You Sure ?",
+    "closeNow" : "Casting Lots will be closed"
 }

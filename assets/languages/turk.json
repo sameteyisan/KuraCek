@@ -42,8 +42,11 @@
     "oylamaAsla": "Hiçbir Zaman",
     "oylamaDahaSonra": "Daha Sonra",
     "oylamaistemek": "  Derecelendirmek ister misiniz ?",
-    "oylamaRating" : "Oyla",
+    "oylamaRating": "Oyla",
     "oylamaMemnun": "Uygulamadan memnun musunuz ?",
-    "bildirimSesAc" : "Bildirimlerin Sesini Aç",
-    "bildirimYardim" : "Bildirimler, size ulaşmamızda bize yardımcı olacaktır."
+    "bildirimSesAc": "Bildirimlerin Sesini Aç",
+    "bildirimYardim": "Bildirimler, size ulaşmamızda bize yardımcı olacaktır.",
+    "sayidegil": "Bu bir sayı değil.",
+    "areYouSure": "Emin misiniz ?",
+    "closeNow": "Casting Lots kapatılacak."
 }
