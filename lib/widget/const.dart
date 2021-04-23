@@ -42,3 +42,9 @@ void buildToast(
       duration: Toast.LENGTH_LONG,
       gravity: Toast.TOP,
     );
+var bgBtnGreen = TextButton.styleFrom(backgroundColor: btnGreen);
+var bgBtnOrange = TextButton.styleFrom(backgroundColor: btnOrange);
+Divider divider10 = Divider(
+  height: 10,
+  indent: 500,
+);

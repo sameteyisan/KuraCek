@@ -3,10 +3,10 @@
     "appBarText": "Casting Lots",
     "inputController.text.isNotEmpty": "Candidate field deleted",
     "hintText": "Candidate",
-    "labelText": "Enter a Candidate",
+    "labelText": "Add Candidate",
     "ButtonAdd": "Add",
     "addList.isNotEmpty": "Candidates are deleted",
-    "ButtonClear": "Delete Everything",
+    "ButtonClear": "Delete Added Candidates",
     "addList.length0": "Nothing Added Yet",
     "addList.length!0": "Candidates",
     "IconButtonClear": "Candidate deleted.",
@@ -30,7 +30,6 @@
     "adayGirilmedi": "Candidate Not Entered ",
     "adayVar": "The candidate already exists",
     "virgul": "Candidate cannot have ',' in the name.",
-    "karakterSiniri": "Character limit exceeded",
     "kuralarim": "My Lots",
     "kuralarimdanSil": "Are You Sure You Want To Delete This Lot?",
     "kuralarimdanSilindi": "Lot is deleted.",
@@ -48,5 +47,5 @@
     "bildirimYardim": "Notifications will help us to reach you.",
     "sayidegil": "This is not a number.",
     "areYouSure": "Are You Sure ?",
-    "closeNow" : "Casting Lots will be closed"
+    "closeNow": "Casting Lots will be closed"
 }
